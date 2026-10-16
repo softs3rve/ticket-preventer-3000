@@ -9,9 +9,10 @@ block, works out when you next have to move, and warns you:
 
 - a Discord message with a map as soon as you park
 - a second Discord message 30 minutes before the cleaning window starts
-- optionally, a **MOVE / SAFE** badge and a flashing **MOVE DA CAR** screen on
-  a Spotify Car Thing (see [car-thing-projects](https://github.com/softs3rve/car-thing-projects)), or on
-  any other device that can read JSON
+- optionally, the map and SAFE/MOVE status on any computer, phone, tablet,
+  or other device that can load a web page or read JSON. One example display,
+  a Spotify Car Thing app with a flashing **MOVE DA CAR** screen, is in
+  [car-thing-projects](https://github.com/softs3rve/car-thing-projects).
 
 > **NYC only.** It reads two City of New York open datasets (street
 > centerlines and ASP sign locations) and NYC DOT's ASP suspension calendar.
@@ -29,7 +30,7 @@ iPhone Shortcut ──POST /parking/report──▶ Cloudflare Worker ──▶ 
                                             ├──▶ Discord webhook (map + next cleaning)
                                             ├── cron every 5 min ──▶ Discord "move the car" alert
                                             └── GET /parking/status, /parking/map.svg
-                                                 ◀── Car Thing / any display
+                                                 ◀── any browser, dashboard, or display
 ```
 
 ---
@@ -69,7 +70,7 @@ npx wrangler secret put PARKING_SHARED_SECRET   # paste it when prompted
 ```
 
 Keep that value somewhere safe (a password manager). You'll paste it into the
-Shortcut and, if you use one, the Car Thing webapp.
+Shortcut and any display you set up.
 
 Deploy:
 
@@ -183,7 +184,21 @@ Content-Type: application/json
 
 ## Step 5: Displays (optional)
 
-- **Spotify Car Thing:** the Parking view (button 4) of
+Discord already handles the alerts. A display is for checking the status at
+a glance. Anything that can load a web page or read JSON works:
+
+- **Any computer, phone, or tablet:** open
+  `https://<your Worker URL>/parking/map.svg?key=<your secret>` in a browser
+  to see the map with the car's street and side, and refresh it to update.
+  Bookmark it, or leave an old tablet or phone on a stand showing it. The
+  map doesn't show the schedule or SAFE/MOVE; those come from
+  `/parking/status`.
+- **A home dashboard or a script:** poll `/parking/status` and show `status`
+  (SAFE/MOVE) and `moveNow` (see the [API reference](#api-reference)). For
+  example, a Home Assistant REST sensor, a Raspberry Pi with a small screen,
+  or an e-ink badge.
+- **A dedicated display, for example a Spotify Car Thing:** the Parking
+  view (button 4) of
   [car-thing-projects](https://github.com/softs3rve/car-thing-projects/tree/main/car-thing-webapp). Set `PARKING_WORKER_BASE` and
   `PARKING_KEY` in its `index.html`. It polls `/parking/status`, shows the
   map, the cleaning schedule, and a SAFE/MOVE badge. In the hour before a
@@ -192,8 +207,6 @@ Content-Type: application/json
   The Car Thing needs an internet connection to reach the Worker; this
   repo's tested setup gets one through a Raspberry Pi (see
   [the Raspberry Pi gateway guide](https://github.com/softs3rve/car-thing-projects/blob/main/docs/02-raspberry-pi-gateway.md)).
-- **Anything else** (an e-ink badge, a widget, a script): poll
-  `/parking/status` as described below.
 
 ## Step 6: Once a year, update the holiday list
 
