@@ -25,7 +25,7 @@ block, works out when you next have to move, and warns you:
 
 ```
 iPhone Shortcut ──POST /parking/report──▶ Cloudflare Worker ──▶ NYC Open Data
- (on CarPlay disconnect)                    │  stores last spot in KV
+ (on car Bluetooth disconnect)              │  stores last spot in KV
                                             ├──▶ Discord webhook (map + next cleaning)
                                             ├── cron every 5 min ──▶ Discord "move the car" alert
                                             └── GET /parking/status, /parking/map.svg
@@ -41,7 +41,8 @@ iPhone Shortcut ──POST /parking/report──▶ Cloudflare Worker ──▶ 
 | A car parked on NYC streets | yes | |
 | [Cloudflare](https://dash.cloudflare.com/sign-up) account | yes | The free Workers plan is enough for one car. |
 | [Node.js](https://nodejs.org) 18 or newer on a computer | yes | Only for deploying; nothing runs on your computer afterwards. |
-| iPhone with the Shortcuts app | recommended | Anything that can send an HTTP POST with JSON works instead (Android automation apps, a script, etc.). CarPlay makes it automatic. |
+| iPhone with the Shortcuts app | recommended | Anything that can send an HTTP POST with JSON works instead (Android automation apps, a script, etc.). |
+| Car stereo (or another device in the car) your phone connects to by Bluetooth | recommended | Its disconnect is what triggers the report automatically. No CarPlay needed. |
 | Discord server you control | recommended | Without it you get no push alerts; you'd have to look at a display. |
 | Spotify Car Thing | optional | Only for the on-dash display. Needs the rest of this repo. |
 
@@ -129,13 +130,20 @@ Two kinds of message:
 ## Step 4: The iPhone Shortcut
 
 This is what makes it automatic. It runs when your phone disconnects from
-CarPlay, which is a good stand-in for "I just parked."
+one specific Bluetooth device: your car stereo, or another Bluetooth device
+you designate that stays in the car. Turning the car off and walking away
+drops that connection, which is a good stand-in for "I just parked." Most
+phones pair with the car over Bluetooth, so this works without CarPlay.
 
-1. Open **Shortcuts → Automation → + (New Automation)**.
-2. Choose **CarPlay → Disconnects**. Set it to **Run Immediately** so it
-   doesn't ask each time.
-3. Add the action **Get Current Location**.
-4. Add the action **Get Contents of URL** and expand it (the arrow):
+1. Pair your phone with the car stereo (or your chosen device) if it isn't
+   already.
+2. Open **Shortcuts → Automation → + (New Automation)**.
+3. Choose **Bluetooth**, pick that one device, and set the automation to run
+   when it **disconnects**. Pick only the car's device, not "any device," or
+   your headphones will report a parking spot too. Set it to **Run
+   Immediately** so it doesn't ask each time.
+4. Add the action **Get Current Location**.
+5. Add the action **Get Contents of URL** and expand it (the arrow):
    - **URL:** `https://<your Worker URL>/parking/report`
    - **Method:** `POST`
    - **Headers:** add `X-Parking-Secret` with your shared secret as the value
@@ -147,16 +155,22 @@ CarPlay, which is a good stand-in for "I just parked."
      | `lon` | Number | the **Current Location** variable, set to **Longitude** |
      | `source` | Text | `shortcut` |
 
-5. Save. Run it once by hand to check that the Discord message arrives.
+6. Save. Run it once by hand to check that the Discord message arrives.
 
 `lat` and `lon` must be **Number** fields. If they're sent as text, the
 Worker answers `400 lat/lon required`.
 
-**No CarPlay?** Make the same shortcut as a regular (non-automation)
-shortcut and run it from the home screen, a widget, the Action Button, or an
-NFC tag in the car. Any other trigger the Shortcuts app offers works too.
+**Other triggers.** If you use CarPlay, **CarPlay → Disconnects** works the
+same way in step 3. With no Bluetooth in the car, make it a regular
+(non-automation) shortcut and run it from the home screen, a widget, the
+Action Button, or an NFC tag in the car.
 
-**Android or something else?** Anything that can send this request works:
+**Good to know:** the report fires on every disconnect, including quick stops
+where the car is turned off. Each one just updates the stored spot to where
+you are, so the latest report always wins.
+
+**Android or something else?** Many Android automation apps can also run on
+a Bluetooth device disconnecting. Anything that can send this request works:
 
 ```
 POST /parking/report
