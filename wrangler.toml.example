@@ -1,0 +1,25 @@
+# Copy to wrangler.toml and fill in the KV namespace id.
+#   cp wrangler.toml.example wrangler.toml
+name = "ticket-preventer-3000"
+main = "worker.js"
+compatibility_date = "2025-09-01"
+
+[observability]
+enabled = true
+
+# Drives checkParkingAlert() in parking.js: checks the last-reported parking
+# spot every 5 minutes and pings Discord once when a cleaning window is
+# within 30 minutes of starting.
+[triggers]
+crons = ["*/5 * * * *"]
+
+# Last reported location + matched street/rules. Single-car tool: one fixed
+# key, not multi-tenant. Create with:
+#   npx wrangler kv namespace create PARKING_KV
+[[kv_namespaces]]
+binding = "PARKING_KV"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+
+# Secrets are NOT set here. Set them with:
+#   npx wrangler secret put PARKING_SHARED_SECRET
+#   npx wrangler secret put DISCORD_WEBHOOK_URL   (optional)

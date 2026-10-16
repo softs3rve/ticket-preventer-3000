@@ -1,0 +1,14 @@
+# Per-deployment config and secrets
+wrangler.toml
+.dev.vars
+*.env
+.env.*
+
+# Dependencies and build output
+node_modules/
+.wrangler/
+dist/
+
+# OS clutter
+.DS_Store
+._*
