@@ -44,7 +44,6 @@ iPhone Shortcut ──POST /parking/report──▶ Cloudflare Worker ──▶ 
 | iPhone with the Shortcuts app | recommended | Anything that can send an HTTP POST with JSON works instead (Android automation apps, a script, etc.). |
 | Car stereo (or another device in the car) your phone connects to by Bluetooth | recommended | Its disconnect is what triggers the report automatically. No CarPlay needed. |
 | Discord server you control | recommended | Without it you get no push alerts; you'd have to look at a display. |
-| Spotify Car Thing | optional | Only for the on-dash display. Needs the rest of this repo. |
 
 ---
 
